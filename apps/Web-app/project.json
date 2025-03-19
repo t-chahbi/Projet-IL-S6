@@ -1,0 +1,12 @@
+{
+    "name": "Web-app",
+    "targets": {
+      "serve": {
+        "executor": "@nx/next:server",
+        "options": {
+          "buildTarget": "Web-app:build",
+          "dev": true
+        }
+      }
+    }
+  }
