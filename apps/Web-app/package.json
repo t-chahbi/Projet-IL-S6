@@ -1,9 +1,9 @@
 {
-  "name": "@projet-il-s6/Web-app",
+  "name": "@projet-il-s6/web-app",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "Web-app"
+    "name": "web-app"
   },
   "dependencies": {
     "next": "~15.1.4",

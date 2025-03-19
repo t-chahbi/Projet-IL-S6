@@ -27,12 +27,11 @@
     },
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
-    "strict": false,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
-    "../../apps/Web-app/.next/types/**/*.ts",
-    "../../dist/apps/Web-app/.next/types/**/*.ts",
+    "../../apps/web-app/.next/types/**/*.ts",
+    "../../dist/apps/web-app/.next/types/**/*.ts",
     "next-env.d.ts",
     "src/**/*.js",
     "src/**/*.jsx",
@@ -47,9 +46,6 @@
     "jest.config.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
-    ".next",
-    "eslint.config.js",
-    "eslint.config.cjs",
-    "eslint.config.mjs"
+    ".next"
   ]
 }

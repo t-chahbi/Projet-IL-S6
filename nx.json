@@ -2,13 +2,10 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": [
-      "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.mjs"
-    ],
-    "sharedGlobals": []
+    "production": ["default"],
+    "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
+  "nxCloudId": "67da925daf6da54c545a4329",
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
@@ -34,19 +31,13 @@
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
       }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
     }
   ],
   "generators": {
     "@nx/next": {
       "application": {
-        "style": "tailwind",
-        "linter": "eslint"
+        "style": "css",
+        "linter": "none"
       }
     }
   }

@@ -1,18 +1,19 @@
+import styles from './page.module.css';
+
 export default function Index() {
   /*
    * Replace the elements below with your own.
    *
-   * Note: The corresponding styles are in the ./index.tailwind file.
+   * Note: The corresponding styles are in the ./index.css file.
    */
-
   return (
-    <div>
+    <div className={styles.page}>
       <div className="wrapper">
         <div className="container">
           <div id="welcome">
             <h1>
               <span> Hello there, </span>
-              Welcome Web-app 👋
+              Welcome web-app 👋
             </h1>
           </div>
 
@@ -396,7 +397,7 @@ export default function Index() {
                 </svg>
                 View project details
               </summary>
-              <pre>nx show project Web-app --web</pre>
+              <pre>nx show project web-app --web</pre>
             </details>
             <details>
               <summary>
