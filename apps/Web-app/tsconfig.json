@@ -26,18 +26,16 @@
       ]
     },
     "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "rootDir": ".",
+    "tsBuildInfoFile": ".next/tsconfig.tsbuildinfo"
   },
   "include": [
-    "../../apps/web-app/.next/types/**/*.ts",
-    "../../dist/apps/web-app/.next/types/**/*.ts",
     "next-env.d.ts",
     "src/**/*.js",
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    ".next/types/**/*.ts"
+    "../../dist/apps/web-app/.next/types/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
