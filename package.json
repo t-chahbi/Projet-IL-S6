@@ -7,7 +7,11 @@
   "dependencies": {
     "next": "~15.1.4",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-player": "^2.16.0",
+    "video.js": "^7.21.7",
+    "videojs-contrib-quality-levels": "^2.1.0",
+    "videojs-http-source-selector": "^1.1.6"
   },
   "devDependencies": {
     "@nx/js": "20.6.1",
