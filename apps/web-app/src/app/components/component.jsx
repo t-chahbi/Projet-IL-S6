@@ -1,3 +1,4 @@
-const component = () => {
-    return <div>test component</div>;
-    }
+import Button from "./ui/Button";
+
+
+export { Button };
