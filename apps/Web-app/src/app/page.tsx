@@ -1,4 +1,4 @@
-import { Button } from "./components/component";
+import { Button } from "../components/component";
 export default function Home() {
   return (
     <div>
