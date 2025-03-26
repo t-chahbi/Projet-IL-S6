@@ -9,9 +9,9 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-player": "^2.16.0",
-    "video.js": "^7.21.7",
     "videojs-contrib-quality-levels": "^2.1.0",
-    "videojs-http-source-selector": "^1.1.6"
+    "videojs-http-source-selector": "^1.1.6",
+    "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
     "@nx/js": "20.6.1",
@@ -25,7 +25,8 @@
     "nx": "20.6.1",
     "prettier": "^2.6.2",
     "tslib": "^2.3.0",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "video.js": "^8.22.0"
   },
   "workspaces": [
     "apps/*"
