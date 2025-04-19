@@ -8,7 +8,7 @@
     "@tabler/icons-react": "^3.31.0",
     "clsx": "^2.1.1",
     "motion": "^12.6.0",
-    "next": "~15.1.4",
+    "next": "^15.2.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-element-to-jsx-string": "^17.0.0",

@@ -1,5 +1,7 @@
 import React from 'react';
-import { ButtonsCard } from "@/components/ui/tailwindcss-buttons"; // Chemin d'accès à `tailwindcss-buttons.tsx`
+import { Header } from "@/components/ui/home/Header"; // Chemin d'accès à `tailwindcss-buttons.tsx`
+import { About } from "@/components/ui/home/About";
+import SearchPage  from "@/components/ui/home/SearchBar"; 
 
 const App = () => {
   const handleClick = () => {
@@ -7,12 +9,25 @@ const App = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl mb-4">Bienvenue sur l'application</h1>
-      <ButtonsCard >
-        <p>Cliquer ici pour déclencher l'action</p>
-      </ButtonsCard>
+    <div  className="flex flex-col min-h-screen bg-gradient-to-l from-[#1B00CD] to-[#100028] ">
+        <div className=" w-full  p-6 shadow-md bg-opacity-20 ">
+          <Header/>
+        </div>
+       <div className="flex justify-center">
+          <div className=" bg-white p-4 rounded-lg shadow-lg w-4/6">
+                  <SearchPage></SearchPage>
+          </div>
+       </div>
+        <div className="items-center flex justify-center ">
+        <div className=" w-full p-3 bg-gray-600 bg-opacity-30 rounded-lg shadow-lg mt-14">
+            <About />
+          </div>
+        </div>
+        
     </div>
+   
+    
+    
   );
 };
 
