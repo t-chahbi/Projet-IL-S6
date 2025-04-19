@@ -1,6 +1,12 @@
 'use client';
 
 import React from 'react';
+
+import { createClient } from '@supabase/supabase-js';
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqdm5nZ2lsaGhucWNlamxjaXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjY0MzEsImV4cCI6MjA1NzgwMjQzMX0._OYojHrveQ_X9elB87c05pkyTr2im1ZNpRSNVWJr2nw'; //en sah faut mettre ca dans un .env quand meme
+const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   Form,
   FormItem,
@@ -25,8 +31,32 @@ export default function AuthPage() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form data:', data);
+  const onSubmit = async (data: FormData) => {
+    if (!data.email.includes('@')) {
+      console.error('Veuillez entrer une adresse email valide.');
+      return;
+    }
+
+    if (data.password.length < 6) {
+      console.error('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        console.log('Données envoyées à Supabase :', data);
+        console.error("Erreur lors de l'inscription :", error.message);
+      } else {
+        console.log('Inscription réussie !');
+      }
+    } catch (err) {
+      console.error('Erreur inattendue :', err);
+    }
   };
 
   return (
