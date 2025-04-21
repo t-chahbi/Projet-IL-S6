@@ -1,10 +1,16 @@
 'use client';
 
 import React from 'react';
+
+import { createClient } from '@supabase/supabase-js';
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqdm5nZ2lsaGhucWNlamxjaXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjY0MzEsImV4cCI6MjA1NzgwMjQzMX0._OYojHrveQ_X9elB87c05pkyTr2im1ZNpRSNVWJr2nw'; //en sah faut mettre ca dans un .env quand meme
+const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   Form,
   FormItem,
-  FormLabel,
+  //FormLabel,
   FormControl,
   FormMessage,
   FormField,
@@ -25,8 +31,27 @@ export default function AuthPage() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form data:', data);
+  const onSubmit = async (data: FormData) => {
+    if (!data.email.includes('@')) {
+      console.error('Veuillez entrer une adresse email valide.');
+      return;
+    }
+    // Faire un If si aucun utilisateur n'est trouvé avec cet emai
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        console.log('Données envoyées à Supabase :', data);
+        console.error("Erreur lors de la connexion :", error.message);
+      } else {
+        console.log('Connexion réussie !');
+      }
+    } catch (err) {
+      console.error('Erreur inattendue :', err);
+    }
   };
 
   return (
