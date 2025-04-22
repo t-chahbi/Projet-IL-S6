@@ -1,22 +1,23 @@
 'use client';
 
-import React from 'react';
-
+import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqdm5nZ2lsaGhucWNlamxjaXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjY0MzEsImV4cCI6MjA1NzgwMjQzMX0._OYojHrveQ_X9elB87c05pkyTr2im1ZNpRSNVWJr2nw'; //en sah faut mettre ca dans un .env quand meme
-const supabase = createClient(supabaseUrl, supabaseKey);
+
 import {
   Form,
   FormItem,
-  //FormLabel,
   FormControl,
   FormMessage,
   FormField,
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button'; // Exemple d'un bouton personnalisé
+import { Button } from '@/components/ui/button';
+import Toast from '@/components/ui/Toast-message'; // Petit toast sympa pour les erreur et les indications
+
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqdm5nZ2lsaGhucWNlamxjaXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjY0MzEsImV4cCI6MjA1NzgwMjQzMX0._OYojHrveQ_X9elB87c05pkyTr2im1ZNpRSNVWJr2nw';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 type FormData = {
   email: string;
@@ -31,140 +32,167 @@ export default function AuthPage() {
     },
   });
 
+  // Paramètre pour le Toast
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   const onSubmit = async (data: FormData) => {
     if (!data.email.includes('@')) {
-      console.error('Veuillez entrer une adresse email valide.');
+      showToastMessage('Veuillez entrer une adresse email valide.');
       return;
     }
-    // Faire un If si aucun utilisateur n'est trouvé avec cet emai
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
+      if (session) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        showToastMessage(`Bienvenue ${user?.email ?? 'utilisateur'}`);
+      }
+
       if (error) {
         console.log('Données envoyées à Supabase :', data);
         console.error("Erreur lors de la connexion :", error.message);
+        showToastMessage("Erreur : " + error.message);
       } else {
         console.log('Connexion réussie !');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur inattendue :', err);
+      showToastMessage("Erreur inattendue : " + err.message);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-900">
-      <div className="w-full max-w-lg">
-        <div
-          style={{
-            boxShadow:
-              '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          }}
-          className="overflow-hidden bg-gray-800 rounded-lg shadow-xl"
-        >
-          <div className="p-8">
-            <h2 className="text-3xl font-extrabold text-center text-white">
-              Connexion à votre compte
-            </h2>
-            <p className="mt-4 text-center text-gray-400">
-              Entrez votre adresse e-mail et votre mot de passe pour vous
-              connecter.
-            </p>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="mt-8 space-y-6"
+    <>
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <div className="w-full max-w-lg">
+          <div
+            style={{
+              boxShadow:
+                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+            className="overflow-hidden bg-gray-800 rounded-lg shadow-xl"
+          >
+            <div className="p-8">
+              <h2 className="text-3xl font-extrabold text-center text-white">
+                Connexion à votre compte
+              </h2>
+              <p className="mt-4 text-center text-gray-400">
+                Entrez votre adresse e-mail et votre mot de passe pour vous
+                connecter.
+              </p>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="mt-8 space-y-6"
+                >
+                  {/* Champ Email */}
+                  <FormField
+                    name="email"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <input
+                            type="email"
+                            placeholder="adresse e-mail"
+                            className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Champ Mot de passe */}
+                  <FormField
+                    name="password"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <input
+                            type="password"
+                            placeholder="mot de passe"
+                            className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Checkbox et lien */}
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center">
+                      <input
+                        className="w-4 h-4 text-indigo-500 border-gray-600 rounded focus:ring-indigo-400"
+                        type="checkbox"
+                        name="remember-me"
+                        id="remember-me"
+                      />
+                      <label
+                        className="block ml-2 text-sm text-gray-400"
+                        htmlFor="remember-me"
+                      >
+                        se souvenir de moi
+                      </label>
+                    </div>
+
+                    <div className="text-sm">
+                      <a
+                        className="font-medium text-indigo-500 hover:text-indigo-400"
+                        href="#"
+                      >
+                        Mot de passe oublié ?
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Bouton de soumission */}
+                  <div>
+                    <Button
+                      type="submit"
+                      className="relative flex justify-center w-full px-4 py-3 text-sm font-medium text-gray-900 bg-indigo-500 border border-transparent rounded-md group hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Se connecter
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+            <div className="px-8 py-4 text-center bg-gray-700">
+              <span className="text-gray-400">Pas de compte? </span>
+              <a
+                className="font-medium text-indigo-500 hover:text-indigo-400"
+                href="#"
               >
-                {/* Champ Email */}
-                <FormField
-                  name="email"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <input
-                          type="email"
-                          placeholder="adresse e-mail"
-                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Champ Mot de passe */}
-                <FormField
-                  name="password"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <input
-                          type="password"
-                          placeholder="mot de passe"
-                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Checkbox et lien */}
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center">
-                    <input
-                      className="w-4 h-4 text-indigo-500 border-gray-600 rounded focus:ring-indigo-400"
-                      type="checkbox"
-                      name="remember-me"
-                      id="remember-me"
-                    />
-                    <label
-                      className="block ml-2 text-sm text-gray-400"
-                      htmlFor="remember-me"
-                    >
-                      se souvenir de moi
-                    </label>
-                  </div>
-
-                  <div className="text-sm">
-                    <a
-                      className="font-medium text-indigo-500 hover:text-indigo-400"
-                      href="#"
-                    >
-                      Mot de passe oublié ?
-                    </a>
-                  </div>
-                </div>
-
-                {/* Bouton de soumission */}
-                <div>
-                  <Button
-                    type="submit"
-                    className="relative flex justify-center w-full px-4 py-3 text-sm font-medium text-gray-900 bg-indigo-500 border border-transparent rounded-md group hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Se connecter
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
-          <div className="px-8 py-4 text-center bg-gray-700">
-            <span className="text-gray-400">Pas de compte? </span>
-            <a
-              className="font-medium text-indigo-500 hover:text-indigo-400"
-              href="#"
-            >
-              Créer un compte
-            </a>
+                Créer un compte
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* toast maison */}
+      <Toast message={toastMessage} show={showToast} />
+    </>
   );
 }
