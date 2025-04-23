@@ -3,9 +3,9 @@
 import React from 'react';
 
 import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqdm5nZ2lsaGhucWNlamxjaXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjY0MzEsImV4cCI6MjA1NzgwMjQzMX0._OYojHrveQ_X9elB87c05pkyTr2im1ZNpRSNVWJr2nw'; //en sah faut mettre ca dans un .env quand meme
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   Form,
