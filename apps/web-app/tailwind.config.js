@@ -51,6 +51,17 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Thème néon
+        neon: {
+          blue: "hsl(210, 100%, 50%)",
+          glow: "0 0 10px hsl(210, 100%, 60%), 0 0 20px hsl(210, 100%, 60%)",
+          border: "hsl(210, 100%, 60%)",
+          text: "hsl(210, 100%, 85%)",
+          dark: "hsl(220, 100%, 10%)",
+        },
+      },
+      boxShadow: {
+        neon: "0 0 5px hsl(210, 100%, 60%), 0 0 20px hsl(210, 100%, 50%)",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,10 +77,19 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "neon-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 5px hsl(210, 100%, 60%), 0 0 10px hsl(210, 100%, 50%)",
+          },
+          "50%": {
+            boxShadow: "0 0 15px hsl(210, 100%, 60%), 0 0 30px hsl(210, 100%, 50%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "neon-pulse": "neon-pulse 2s infinite",
       },
     },
   },

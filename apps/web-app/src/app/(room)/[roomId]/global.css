@@ -34,6 +34,66 @@
 
     --radius: 0.5rem;
   }
+
+  [data-theme="light"] {
+    --background: 0 0% 98%;
+    --foreground: 220 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 3.9%;
+
+    --primary: 175 75% 40%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 5% 90%;
+    --secondary-foreground: 220 10% 3.9%;
+
+    --muted: 220 5% 90%;
+    --muted-foreground: 220 5% 40%;
+
+    --accent: 220 5% 90%;
+    --accent-foreground: 220 10% 3.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 5% 88%;
+    --input: 220 5% 88%;
+    --ring: 175 75% 40%;
+  }
+
+  [data-theme="neon-blue"] {
+    --background: 220 50% 2%;
+    --foreground: 210 100% 85%;
+
+    --card: 220 50% 5%;
+    --card-foreground: 210 100% 85%;
+
+    --popover: 220 50% 5%;
+    --popover-foreground: 210 100% 85%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 70% 10%;
+    --secondary-foreground: 210 100% 85%;
+
+    --muted: 220 70% 10%;
+    --muted-foreground: 210 70% 70%;
+
+    --accent: 210 100% 40%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 100% 40%;
+    --input: 220 70% 10%;
+    --ring: 210 100% 50%;
+  }
 }
 
 @layer base {
@@ -41,7 +101,79 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 }
 
+/* Styles pour le thème néon */
+[data-theme="neon-blue"] .neon-glow {
+  text-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.400"), 0 0 15px theme("colors.blue.400");
+}
+
+[data-theme="neon-blue"] .neon-box {
+  box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+}
+
+[data-theme="neon-blue"] .neon-border {
+  border-color: theme("colors.blue.500");
+  box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+}
+
+[data-theme="neon-blue"] .neon-button {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%);
+  border-color: theme("colors.blue.500");
+  box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+  color: theme("colors.blue.200");
+  transition: all 0.3s ease;
+}
+
+[data-theme="neon-blue"] .neon-button:hover {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.6) 100%);
+  box-shadow: 0 0 10px theme("colors.blue.400"), 0 0 20px theme("colors.blue.500"), 0 0 30px theme("colors.blue.600");
+}
+
+[data-theme="neon-blue"] .neon-gradient {
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.3) 0%, rgba(17, 24, 39, 0.9) 100%);
+}
+
+[data-theme="neon-blue"] .neon-tab {
+  transition: all 0.3s ease;
+}
+
+[data-theme="neon-blue"] .neon-tab[data-state="active"] {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%);
+  border-color: theme("colors.blue.500");
+  box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+  color: theme("colors.blue.200");
+}
+
+@keyframes neonPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+  }
+  50% {
+    box-shadow: 0 0 10px theme("colors.blue.400"), 0 0 20px theme("colors.blue.500"), 0 0 30px theme("colors.blue.600");
+  }
+}
+
+[data-theme="neon-blue"] .neon-pulse {
+  animation: neonPulse 2s infinite;
+}
+
+[data-theme="neon-blue"] .neon-text {
+  color: theme("colors.blue.300");
+  text-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+}
+
+[data-theme="neon-blue"] .neon-input {
+  background-color: rgba(17, 24, 39, 0.8);
+  border-color: theme("colors.blue.700");
+  color: theme("colors.blue.200");
+  transition: all 0.3s ease;
+}
+
+[data-theme="neon-blue"] .neon-input:focus {
+  border-color: theme("colors.blue.500");
+  box-shadow: 0 0 5px theme("colors.blue.400"), 0 0 10px theme("colors.blue.500");
+}
