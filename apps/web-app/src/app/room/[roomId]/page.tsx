@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import Lecteur from '@/components/Lecteur';
+import Lecteur from '@/components/ui/room/Lecteur';
 
 export default function page() {
   return (
