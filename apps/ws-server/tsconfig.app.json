@@ -1,0 +1,30 @@
+{
+  "root": true,
+  "sourceRoot": "src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/ws-server",
+        "main": "src/main.ts",
+        "tsConfig": "apps/ws-server/tsconfig.app.json"
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "ws-server:build:development",
+        "outputFile": "dist/apps/ws-server/main.js"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "ws-server:build:development"
+        }
+      }
+    }
+  },
+  "tags": []
+}
