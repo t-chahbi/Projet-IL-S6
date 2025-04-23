@@ -25,6 +25,10 @@
     "videojs-contrib-quality-levels": "^2.1.0",
     "videojs-http-source-selector": "^1.1.6",
     "videojs-youtube": "^3.0.1"
+    "@tabler/icons-react": "^3.31.0",
+    "clsx": "^2.1.1",
+    "motion": "^12.6.0",
+    "react-element-to-jsx-string": "^17.0.0",
   },
   "devDependencies": {
     "@nx/esbuild": "20.8.0",
