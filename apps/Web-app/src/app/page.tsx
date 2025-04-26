@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/home/Header"; // Chemin d'accès à `tai
 import { About } from "@/components/ui/home/About";
 import { Footer } from "@/components/ui/home/Footer";
 import SearchPage  from "@/components/ui/home/SearchBar"; 
+import Footer from '@/components/ui/home/Footer';
 
 const App = () => {
   const handleClick = () => {
@@ -10,6 +11,7 @@ const App = () => {
   };
 
   return (
+
     <div  className="flex flex-col min-h-screen bg-gradient-to-l from-[#1B00CD] to-[#100028] ">
       <div className=" w-full  p-6 shadow-md bg-opacity-20 ">
         <Header/>
