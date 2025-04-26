@@ -1,0 +1,40 @@
+{
+  "name": "ws-server",
+  "projectType": "application",
+  "sourceRoot": "apps/ws-server/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/ws-server",
+        "main": "apps/ws-server/src/main.ts",
+        "tsConfig": "apps/ws-server/tsconfig.app.json"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true
+        },
+        "development": {
+          "optimization": false,
+          "outputPath": "dist/apps/ws-server",
+          "main": "apps/ws-server/src/main.ts",
+          "tsConfig": "apps/ws-server/tsconfig.app.json"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "ws-server:build:development"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "ws-server:build:development"
+        }
+      }
+    }
+  },
+  "tags": []
+}

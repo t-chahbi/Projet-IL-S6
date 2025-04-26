@@ -27,7 +27,8 @@
     },
     "outDir": "dist",
     "rootDir": ".",
-    "tsBuildInfoFile": ".next/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": ".next/tsconfig.tsbuildinfo",
+    "strict": false
   },
   "include": [
     "../../dist/apps/web-app/.next/types/**/*.ts",
