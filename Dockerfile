@@ -8,7 +8,7 @@ RUN npm i
 
 # 2. Installer les dépendances du front
 COPY apps/Web-app/package*.json apps/Web-app/
-RUN npm ci --prefix apps/Web-app
+RUN npm i --prefix apps/Web-app
 
 # 3. Stage "dev" — hot-reload via volume
 FROM base AS dev
