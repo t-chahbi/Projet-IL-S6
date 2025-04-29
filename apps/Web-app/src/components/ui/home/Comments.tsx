@@ -32,7 +32,7 @@ export default function Comments(){
     }
     )
     return(
-        <div className="text-center flex flex-col justify-center ">
+        <div className="text-center flex flex-col justify-center text-black">
             <Comment text={commentsList[currentIndex]}></Comment>
         </div>
     );

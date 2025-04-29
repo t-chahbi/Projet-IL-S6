@@ -17,61 +17,112 @@ interface RoomMeta {
   hostId: string;
   createdAt: number;
   password?: string;
+  videoUrl?: string;
+  users: Record<string, string>; // socket.id -> username
 }
 
 const roomStates: Record<string, SyncState> = {};
 const roomMeta: Record<string, RoomMeta> = {};
 
+const broadcastRoomState = (roomId: string) => {
+  const meta = roomMeta[roomId];
+  const state = roomStates[roomId];
+  if (!meta || !state) return;
+
+  io.to(roomId).emit("room-state", {
+    videoUrl: meta.videoUrl,
+    users: Object.values(meta.users),
+    currentTime: state.currentTime,
+    isPlaying: state.isPlaying,
+  });
+};
+
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.on('createRoom', ({ roomId, password }: { roomId: string; password?: string }) => {
+  socket.on('create-room', ({ roomId, password, video }: { roomId: string; password?: string; video: { url: string } }, callback: (response: { success: boolean; roomId?: string }) => void) => {
     if (roomMeta[roomId]) {
-      socket.emit('error', { message: 'Room already exists' });
+      callback({ success: false });
       return;
     }
 
     roomMeta[roomId] = {
       hostId: socket.id,
       createdAt: Date.now(),
-      password
+      password,
+      videoUrl: video.url,
+      users: {},
     };
 
     roomStates[roomId] = { currentTime: 0, isPlaying: false };
 
     socket.join(roomId);
-    socket.emit('roomCreated', { roomId });
+    callback({ success: true, roomId });
     console.log(`Room ${roomId} created by ${socket.id}`);
   });
 
-  socket.on('joinRoom', ({ roomId, password }: { roomId: string; password?: string }) => {
+  socket.on('join-room', ({ roomId, password, name }: { roomId: string; password?: string; name?: string }, callback: (response: { success: boolean; videoUrl?: string; userId?: string }) => void) => {
     const meta = roomMeta[roomId];
 
     if (!meta) {
-      socket.emit('error', { message: 'Room does not exist' });
+      callback({ success: false });
       return;
     }
 
     if (meta.password && meta.password !== password) {
-      socket.emit('error', { message: 'Incorrect password' });
+      callback({ success: false });
       return;
     }
 
     socket.join(roomId);
+    const displayName = name || socket.id;
+    meta.users[socket.id] = displayName;
+
     console.log(`${socket.id} joined room ${roomId}`);
 
     const state = roomStates[roomId] || { currentTime: 0, isPlaying: false };
     socket.emit('sync', state);
+    io.to(roomId).emit('users', Object.values(meta.users));
+    callback({ success: true, videoUrl: meta.videoUrl, userId: socket.id });
+    broadcastRoomState(roomId);
   });
 
   socket.on('sync', ({ roomId, currentTime, isPlaying }: { roomId: string; currentTime: number; isPlaying: boolean }) => {
     if (!roomStates[roomId]) return;
     roomStates[roomId] = { currentTime, isPlaying };
-    socket.to(roomId).emit('sync', { currentTime, isPlaying });
+    broadcastRoomState(roomId);
+  });
+
+  socket.on("video-play", ({ roomId }) => {
+    if (roomStates[roomId]) {
+      roomStates[roomId].isPlaying = true;
+      broadcastRoomState(roomId);
+    }
+  });
+
+  socket.on("video-pause", ({ roomId }) => {
+    if (roomStates[roomId]) {
+      roomStates[roomId].isPlaying = false;
+      broadcastRoomState(roomId);
+    }
+  });
+
+  socket.on("seek", ({ roomId, currentTime }) => {
+    if (roomStates[roomId]) {
+      roomStates[roomId].currentTime = currentTime;
+      broadcastRoomState(roomId);
+    }
   });
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
+    for (const [roomId, meta] of Object.entries(roomMeta)) {
+      if (meta.users[socket.id]) {
+        delete meta.users[socket.id];
+        io.to(roomId).emit('users', Object.values(meta.users));
+        broadcastRoomState(roomId);
+      }
+    }
   });
 });
 

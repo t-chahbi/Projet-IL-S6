@@ -3,11 +3,17 @@
 import Lecteur from "@/components/ui/room/Lecteur"
 import { useAppTheme } from "@/contexts/theme-context"
 
+import React from "react"
+
 interface VideoPlayerProps {
   title: string
+  videoUrl: string
+  videoRef: React.RefObject<HTMLVideoElement>
+  currentTime: number
+  isPlaying: boolean
 }
 
-export default function VideoPlayer({ title }: VideoPlayerProps) {
+export default function VideoPlayer({ title, videoUrl, videoRef, currentTime, isPlaying }: VideoPlayerProps) {
   const { isNeonTheme, isLightTheme } = useAppTheme()
 
   return (
@@ -17,7 +23,12 @@ export default function VideoPlayer({ title }: VideoPlayerProps) {
           isNeonTheme ? "border-blue-900 neon-border" : isLightTheme ? "border-gray-300" : "border-gray-800"
         } bg-black`}
       >
-        <Lecteur videoUrl='https://youtu.be/1GtAkWMFnyM?si=gq_G-fHFj3-sC4eB' />
+        <Lecteur
+          videoUrl={videoUrl}
+          videoRef={videoRef}
+          currentTime={currentTime}
+          isPlaying={isPlaying}
+        />
       </div>
 
       <div
@@ -41,6 +52,12 @@ export default function VideoPlayer({ title }: VideoPlayerProps) {
         </p>
         <div className="flex items-center gap-3 mt-3">
           <button
+            onClick={() => {
+              const videoEl = videoRef.current;
+              if (videoEl) {
+                videoEl.paused ? videoEl.play() : videoEl.pause();
+              }
+            }}
             className={`px-4 py-2 rounded-md text-white font-medium ${
               isNeonTheme
                 ? "neon-button"
