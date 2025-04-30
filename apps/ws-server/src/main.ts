@@ -114,6 +114,15 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handler to update the current video URL for a room
+  socket.on('set-video', ({ roomId, videoUrl }: { roomId: string; videoUrl: string }) => {
+    console.log(`Video URL set for room ${roomId}: ${videoUrl}`);
+    if (roomMeta[roomId]) {
+      roomMeta[roomId].videoUrl = videoUrl;
+      broadcastRoomState(roomId);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
     for (const [roomId, meta] of Object.entries(roomMeta)) {

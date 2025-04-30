@@ -1,15 +1,50 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Bell, Search, Share2, X } from "lucide-react"
 import { useAppTheme } from "@/contexts/theme-context"
+import { useSocketEmit } from "@/lib/useSocket";
+import { useParams } from "next/navigation";
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { isNeonTheme, isLightTheme } = useAppTheme()
+
+  const { roomId } = useParams() as { roomId: string };
+  const emit = useSocketEmit();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState<{ title: string; url: string; thumbnail: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchResults = async () => {
+    if (!searchQuery.trim()) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/youtube?q=${encodeURIComponent(searchQuery)}`);
+      const json = await res.json();
+      setResults(json.items);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isSearchOpen) return;
+    const handler = setTimeout(() => {
+      if (searchQuery.trim()) {
+        fetchResults();
+      } else {
+        setResults([]);
+      }
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery, isSearchOpen]);
 
   return (
     <header
@@ -48,7 +83,9 @@ export default function Header() {
         {isSearchOpen ? (
           <div className="flex-1 mx-4 flex items-center relative">
             <Input
-              placeholder="Rechercher des films, séries ou utilisateurs..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.currentTarget.value)}
+              placeholder="Rechercher des vidéos..."
               className={`pl-10 ${
                 isNeonTheme
                   ? "neon-input"
@@ -77,6 +114,30 @@ export default function Header() {
             >
               <X className="h-4 w-4" />
             </Button>
+            <div className="absolute top-full left-0 w-full mt-2 p-4 bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg z-10 transition-opacity animate-fade-in">
+              {isLoading ? (
+                <p className="text-center text-sm text-black">Chargement...</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {results.map((video) => (
+                    <a
+                      key={video.url}
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        emit("set-video", { roomId, videoUrl: video.url });
+                        setIsSearchOpen(false);
+                        setResults([]);
+                      }}
+                      className="group block overflow-hidden rounded-lg shadow hover:shadow-lg transform hover:scale-105 transition"
+                    >
+                      <img src={video.thumbnail} alt={video.title} className="w-full h-32 object-cover" />
+                      <p className="mt-2 text-sm font-medium group-hover:text-teal-600 dark:group-hover:text-teal-400 px-2 text-black">{video.title}</p>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="hidden md:flex flex-1 justify-center">
