@@ -1,4 +1,3 @@
-"use client";
 import {PayementCheckout} from "@/app/payementCheckout/payementCheck"
 const App = ()=>{
     return (
@@ -7,4 +6,4 @@ const App = ()=>{
         </div>
     )
 }
-export default App ;
+export default App;
