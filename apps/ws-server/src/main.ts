@@ -5,7 +5,7 @@ const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
     origin: '*',
-  }
+  },
 });
 
 interface SyncState {
@@ -29,7 +29,7 @@ const broadcastRoomState = (roomId: string) => {
   const state = roomStates[roomId];
   if (!meta || !state) return;
 
-  io.to(roomId).emit("room-state", {
+  io.to(roomId).emit('room-state', {
     videoUrl: meta.videoUrl,
     users: Object.values(meta.users),
     currentTime: state.currentTime,
@@ -40,74 +40,109 @@ const broadcastRoomState = (roomId: string) => {
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.on('create-room', ({ roomId, password, video }: { roomId: string; password?: string; video: { url: string } }, callback: (response: { success: boolean; roomId?: string }) => void) => {
-    if (roomMeta[roomId]) {
-      callback({ success: false });
-      return;
+  socket.on(
+    'create-room',
+    (
+      {
+        roomId,
+        password,
+        video,
+      }: { roomId: string; password?: string; video: { url: string } },
+      callback: (response: { success: boolean; roomId?: string }) => void
+    ) => {
+      if (roomMeta[roomId]) {
+        callback({ success: false });
+        return;
+      }
+
+      roomMeta[roomId] = {
+        hostId: socket.id,
+        createdAt: Date.now(),
+        password,
+        videoUrl: video.url,
+        users: {},
+      };
+
+      roomStates[roomId] = { currentTime: 0, isPlaying: false };
+
+      socket.join(roomId);
+      callback({ success: true, roomId });
+      console.log(`Room ${roomId} created by ${socket.id}`);
     }
+  );
 
-    roomMeta[roomId] = {
-      hostId: socket.id,
-      createdAt: Date.now(),
-      password,
-      videoUrl: video.url,
-      users: {},
-    };
+  socket.on(
+    'join-room',
+    (
+      {
+        roomId,
+        password,
+        name,
+      }: { roomId: string; password?: string; name?: string },
+      callback: (response: {
+        success: boolean;
+        videoUrl?: string;
+        userId?: string;
+      }) => void
+    ) => {
+      const meta = roomMeta[roomId];
 
-    roomStates[roomId] = { currentTime: 0, isPlaying: false };
+      if (!meta) {
+        callback({ success: false });
+        return;
+      }
 
-    socket.join(roomId);
-    callback({ success: true, roomId });
-    console.log(`Room ${roomId} created by ${socket.id}`);
-  });
+      if (meta.password && meta.password !== password) {
+        callback({ success: false });
+        return;
+      }
 
-  socket.on('join-room', ({ roomId, password, name }: { roomId: string; password?: string; name?: string }, callback: (response: { success: boolean; videoUrl?: string; userId?: string }) => void) => {
-    const meta = roomMeta[roomId];
+      socket.join(roomId);
+      const displayName = name || socket.id;
+      meta.users[socket.id] = displayName;
 
-    if (!meta) {
-      callback({ success: false });
-      return;
+      console.log(`${socket.id} joined room ${roomId}`);
+
+      const state = roomStates[roomId] || { currentTime: 0, isPlaying: false };
+      socket.emit('sync', state);
+      io.to(roomId).emit('users', Object.values(meta.users));
+      callback({ success: true, videoUrl: meta.videoUrl, userId: socket.id });
+      broadcastRoomState(roomId);
     }
+  );
 
-    if (meta.password && meta.password !== password) {
-      callback({ success: false });
-      return;
+  socket.on(
+    'sync',
+    ({
+      roomId,
+      currentTime,
+      isPlaying,
+    }: {
+      roomId: string;
+      currentTime: number;
+      isPlaying: boolean;
+    }) => {
+      if (!roomStates[roomId]) return;
+      roomStates[roomId] = { currentTime, isPlaying };
+      broadcastRoomState(roomId);
     }
+  );
 
-    socket.join(roomId);
-    const displayName = name || socket.id;
-    meta.users[socket.id] = displayName;
-
-    console.log(`${socket.id} joined room ${roomId}`);
-
-    const state = roomStates[roomId] || { currentTime: 0, isPlaying: false };
-    socket.emit('sync', state);
-    io.to(roomId).emit('users', Object.values(meta.users));
-    callback({ success: true, videoUrl: meta.videoUrl, userId: socket.id });
-    broadcastRoomState(roomId);
-  });
-
-  socket.on('sync', ({ roomId, currentTime, isPlaying }: { roomId: string; currentTime: number; isPlaying: boolean }) => {
-    if (!roomStates[roomId]) return;
-    roomStates[roomId] = { currentTime, isPlaying };
-    broadcastRoomState(roomId);
-  });
-
-  socket.on("video-play", ({ roomId }) => {
+  socket.on('video-play', ({ roomId }) => {
     if (roomStates[roomId]) {
       roomStates[roomId].isPlaying = true;
       broadcastRoomState(roomId);
     }
   });
 
-  socket.on("video-pause", ({ roomId }) => {
+  socket.on('video-pause', ({ roomId }) => {
     if (roomStates[roomId]) {
       roomStates[roomId].isPlaying = false;
       broadcastRoomState(roomId);
     }
   });
 
-  socket.on("seek", ({ roomId, currentTime }) => {
+  socket.on('seek', ({ roomId, currentTime }) => {
     if (roomStates[roomId]) {
       roomStates[roomId].currentTime = currentTime;
       broadcastRoomState(roomId);
@@ -115,13 +150,27 @@ io.on('connection', (socket) => {
   });
 
   // Handler to update the current video URL for a room
-  socket.on('set-video', ({ roomId, videoUrl }: { roomId: string; videoUrl: string }) => {
-    console.log(`Video URL set for room ${roomId}: ${videoUrl}`);
-    if (roomMeta[roomId]) {
-      roomMeta[roomId].videoUrl = videoUrl;
-      broadcastRoomState(roomId);
+  socket.on(
+    'set-video',
+    ({ roomId, videoUrl }: { roomId: string; videoUrl: string }) => {
+      console.log(`Video URL set for room ${roomId}: ${videoUrl}`);
+      if (roomMeta[roomId]) {
+        roomMeta[roomId].videoUrl = videoUrl;
+        broadcastRoomState(roomId);
+      }
     }
-  });
+  );
+
+  //messages
+  socket.on(
+    'send-message',
+    ({ roomId, message }: { roomId: string; message: string }) => {
+      if (roomMeta[roomId]) {
+        io.to(roomId).emit('receive-message', { userId: socket.id, message });
+        console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
+      }
+    }
+  );
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
@@ -133,6 +182,55 @@ io.on('connection', (socket) => {
       }
     }
   });
+
+  //room pour les tests
+  socket.on(
+    'test-create-room',
+    (
+      { roomId }: { roomId: string },
+      callback: (response: { success: boolean }) => void
+    ) => {
+      if (roomMeta[roomId]) {
+        callback({ success: false });
+        return;
+      }
+
+      roomMeta[roomId] = {
+        hostId: socket.id,
+        createdAt: Date.now(),
+        users: {},
+      };
+
+      roomStates[roomId] = { currentTime: 0, isPlaying: false };
+
+      socket.join(roomId);
+      callback({ success: true });
+      console.log(`Test Room ${roomId} created by ${socket.id}`);
+    }
+  );
+
+  //connexion à une room pour les tests
+  socket.on(
+    'test-join-room',
+    (
+      { roomId }: { roomId: string },
+      callback: (response: { success: boolean }) => void
+    ) => {
+      const meta = roomMeta[roomId];
+
+      if (!meta) {
+        callback({ success: false });
+        return;
+      }
+
+      socket.join(roomId);
+      meta.users[socket.id] = socket.id;
+
+      console.log(`${socket.id} joined test room ${roomId}`);
+
+      callback({ success: true });
+    }
+  );
 });
 
 const PORT = process.env.PORT || 3001;

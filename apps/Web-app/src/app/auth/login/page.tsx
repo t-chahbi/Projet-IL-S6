@@ -18,7 +18,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-
 type FormData = {
   email: string;
   password: string;
@@ -66,14 +65,14 @@ export default function AuthPage() {
 
       if (error) {
         console.log('Données envoyées à Supabase :', data);
-        console.error("Erreur lors de la connexion :", error.message);
-        showToastMessage("Erreur : " + error.message);
+        console.error('Erreur lors de la connexion :', error.message);
+        showToastMessage('Erreur : ' + error.message);
       } else {
         console.log('Connexion réussie !');
       }
     } catch (err: any) {
       console.error('Erreur inattendue :', err);
-      showToastMessage("Erreur inattendue : " + err.message);
+      showToastMessage('Erreur inattendue : ' + err.message);
     }
   };
 
@@ -182,7 +181,7 @@ export default function AuthPage() {
               <span className="text-gray-400">Pas de compte? </span>
               <a
                 className="font-medium text-indigo-500 hover:text-indigo-400"
-                href="#"
+                href="/auth/register"
               >
                 Créer un compte
               </a>

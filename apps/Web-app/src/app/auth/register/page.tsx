@@ -154,7 +154,7 @@ export default function AuthPage() {
             <span className="text-gray-400">Déjà un compte? </span>
             <a
               className="font-medium text-indigo-500 hover:text-indigo-400"
-              href="#"
+              href="/auth/login"
             >
               Connectez vous
             </a>
