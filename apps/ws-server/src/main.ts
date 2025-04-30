@@ -231,6 +231,33 @@ io.on('connection', (socket) => {
       callback({ success: true });
     }
   );
+  socket.on('webrtc-offer',({roomId , offer , users}) =>{
+    users.forEach((userId : string) => {
+      socket.to(userId).emit('webrtc-offer',{
+        from : socket.id,
+        offer 
+      });
+    });
+  });
+
+  socket.on('webrtc-answer',({roomId,answer,users})=> {
+    users.forEach((userId : string) => {
+      socket.to(userId).emit('webrtc-answer',{
+        from : socket.id,
+        answer
+      });
+    });
+  });
+  
+  socket.on('webrtc-candidate',({roomId,candidate,users})=> {
+    users.forEach((userId : string) => {
+      socket.to(userId).emit('webrtc-candidate',{
+        from : socket.id,
+        candidate 
+      });
+    });
+  });
+
 });
 
 const PORT = process.env.PORT || 3001;

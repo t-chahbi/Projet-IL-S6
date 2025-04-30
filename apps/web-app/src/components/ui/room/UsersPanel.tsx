@@ -25,6 +25,17 @@ export default function UsersPanel({ users }: UsersPanelProps) {
       >
         Utilisateurs en ligne ({users.length})
       </h3>
+      <Button
+            size="icon"
+            onClick={handleOpenVocal}
+            className={`${
+              isNeonTheme
+                ? "neon-button"
+                : isLightTheme
+                  ? "bg-teal-500 hover:bg-teal-600"
+                  : "bg-teal-600 hover:bg-teal-700"
+            }`}
+          ></Button>
       <div className="space-y-3">
         {users.map((user) => (
           <div key={user.id} className="flex items-center gap-3">
