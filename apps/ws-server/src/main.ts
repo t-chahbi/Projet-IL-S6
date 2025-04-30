@@ -45,7 +45,6 @@ io.on('connection', (socket) => {
       callback({ success: false });
       return;
     }
-
     roomMeta[roomId] = {
       hostId: socket.id,
       createdAt: Date.now(),
@@ -53,9 +52,8 @@ io.on('connection', (socket) => {
       videoUrl: video.url,
       users: {},
     };
-
+    
     roomStates[roomId] = { currentTime: 0, isPlaying: false };
-
     socket.join(roomId);
     callback({ success: true, roomId });
     console.log(`Room ${roomId} created by ${socket.id}`);
@@ -85,6 +83,27 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('users', Object.values(meta.users));
     callback({ success: true, videoUrl: meta.videoUrl, userId: socket.id });
     broadcastRoomState(roomId);
+
+    socket.on('webrtc-offer',({roomId , offer , users}) =>{
+      socket.to(users).emit('webrtc-offer',{
+        from: socket.id,
+        offer 
+      });
+    });
+
+    socket.on('webrtc-answer',({roomId,answer,users})=> {
+      socket.to(users).emit('webrtc-answer',{
+        from:socket.id ,
+        answer
+      });
+    });
+    
+    socket.on('webrtc-candidate',({roomId,candidate,users})=> {
+      socket.to(users).emit('webrtc-candidate',{
+        from:socket.id ,
+        candidate
+      });
+    });
   });
 
   socket.on('sync', ({ roomId, currentTime, isPlaying }: { roomId: string; currentTime: number; isPlaying: boolean }) => {
@@ -124,9 +143,12 @@ io.on('connection', (socket) => {
       }
     }
   });
+
 });
+
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Socket.IO server running on port ${PORT}`);
 });
+
