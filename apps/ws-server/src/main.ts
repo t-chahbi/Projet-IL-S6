@@ -231,13 +231,16 @@ io.on('connection', (socket) => {
       callback({ success: true });
     }
   );
-  socket.on('webrtc-offer',({roomId , offer , users}) =>{
-    users.forEach((userId : string) => {
+  socket.on('webrtc-offer',({roomId , offer}) =>{
+    console.log("users :", roomMeta[roomId].users);
+    console.log("type :", typeof(roomMeta[roomId].users));
+
+    /* .forEach((userId : string) => {
       socket.to(userId).emit('webrtc-offer',{
         from : socket.id,
         offer 
       });
-    });
+    }); */
   });
 
   socket.on('webrtc-answer',({roomId,answer,users})=> {

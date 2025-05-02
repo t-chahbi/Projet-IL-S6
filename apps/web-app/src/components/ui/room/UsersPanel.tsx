@@ -15,7 +15,7 @@ interface UsersPanelProps {
   users: User[]
 }
 
-export default function UsersPanel({ users }: UsersPanelProps) {
+export default function UsersPanel({ users  }: UsersPanelProps , {handleMicrophone}) {
   const { isNeonTheme, isLightTheme } = useAppTheme()
 
   return (
@@ -27,7 +27,7 @@ export default function UsersPanel({ users }: UsersPanelProps) {
       </h3>
       <Button
             size="icon"
-            onClick={handleOpenVocal}
+            onClick={handleMicrophone}
             className={`${
               isNeonTheme
                 ? "neon-button"

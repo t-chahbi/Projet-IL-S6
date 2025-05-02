@@ -11,12 +11,16 @@ import UsersPanel from "@/components/ui/room/UsersPanel"
 import SettingsPanel from "@/components/ui/room/SettingsPanel"
 import { useAppTheme } from "@/contexts/theme-context"
 import { useSocket, useSocketEvent, useSocketEmit } from "@/lib/useSocket";
+import { useVoiceChat } from "@/lib/useSocket"
 
 export default function WatchTogetherPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { isNeonTheme, isLightTheme } = useAppTheme()
   const { roomId } = use(params);
   const socket = useSocket();
   const emitMessage = useSocketEmit("message");
+  const [isMicrophoneOpen , setisMicrophoneOpen]=useState(false)
+
+  const { stream: localstream } = useVoiceChat(roomId, "me", "Test");
 
   const [messages, setMessages] = useState([
     { id: 1, user: "Sophie", content: "Cette scène est incroyable !", time: "14:45" },
@@ -310,7 +314,7 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
             </TabsContent>
 
             <TabsContent value="users" className="flex-1 overflow-y-auto">
-              <UsersPanel users={onlineUsers.map(u => ({ id: u.id, name: u.name, status: "regarde" }))} />
+              <UsersPanel users={onlineUsers.map(u => ({ id: u.id, name: u.name, status: "regarde" }))} handleMicrophone={setisMicrophoneOpen}/>
             </TabsContent>
 
             <TabsContent value="settings" className="flex-1 overflow-y-auto">
