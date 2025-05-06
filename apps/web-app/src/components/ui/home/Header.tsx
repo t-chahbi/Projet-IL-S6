@@ -52,6 +52,7 @@ export default function Header() {
         <Button>Sign up</Button>
         <Button>Login</Button>
         <Button>Upgrade</Button>
+        <Button>Community</Button>
       </div>
     </div>
   );
