@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -12,10 +11,12 @@ import {
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import Toast from '@/components/ui/Toast-message'; // Petit toast sympa pour les erreur et les indications
+import { useRouter } from 'next/navigation';
+import Toast from '@/components/ui/Toast-message';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// prettier-ignore
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 type FormData = {
@@ -24,6 +25,7 @@ type FormData = {
 };
 
 export default function AuthPage() {
+  const router = useRouter();
   const form = useForm<FormData>({
     defaultValues: {
       email: '',
@@ -69,6 +71,7 @@ export default function AuthPage() {
         showToastMessage('Erreur : ' + error.message);
       } else {
         console.log('Connexion réussie !');
+        router.push('/');
       }
     } catch (err: any) {
       console.error('Erreur inattendue :', err);

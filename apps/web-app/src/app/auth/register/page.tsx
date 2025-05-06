@@ -3,9 +3,8 @@
 import React from 'react';
 
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   Form,
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button'; // Exemple d'un bouton personnalisé
+import { useRouter } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -24,6 +24,8 @@ type FormData = {
 };
 
 export default function AuthPage() {
+  const router = useRouter(); // Initialisation du router
+
   const form = useForm<FormData>({
     defaultValues: {
       email: '',
@@ -53,6 +55,7 @@ export default function AuthPage() {
         console.error("Erreur lors de l'inscription :", error.message);
       } else {
         console.log('Inscription réussie !');
+        router.push('/'); // Redirection vers la page d'accueil
       }
     } catch (err) {
       console.error('Erreur inattendue :', err);
