@@ -11,6 +11,10 @@ import UsersPanel from '@/components/ui/room/UsersPanel';
 import SettingsPanel from '@/components/ui/room/SettingsPanel';
 import { useAppTheme } from '@/contexts/theme-context';
 import { useSocket, useSocketEvent, useSocketEmit } from '@/lib/useSocket';
+import { createClient } from '@supabase/supabase-js';
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function WatchTogetherPage({
   params,
@@ -21,6 +25,23 @@ export default function WatchTogetherPage({
   const { roomId } = use(params);
   const socket = useSocket();
   const emitMessage = useSocketEmit('message');
+
+  
+
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error) {
+        setUser(data.user);
+        console.log(data.user?.user_metadata.nom); // nom
+      }
+    };
+
+    fetchUser();
+  }, []);
+  
 
   const [messages, setMessages] = useState([
     {
@@ -198,7 +219,7 @@ export default function WatchTogetherPage({
         ...prev,
         {
           id: prev.length + 1,
-          user: msg.userId || 'Utilisateur inconnu',
+          user: msg.name || 'Utilisateur inconnu',
           content: msg.message || 'Message vide',
           time: new Date().toLocaleTimeString([], {
             hour: '2-digit',
@@ -219,6 +240,7 @@ export default function WatchTogetherPage({
     if (newMessage.trim()) {
       const messageData = {
         roomId,
+        name: user?.user_metadata.nom || 'Utilisateur inconnu',
         message: newMessage,
       };
 

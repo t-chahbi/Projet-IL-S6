@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 type FormData = {
   email: string;
   password: string;
+  name: string;
 };
 
 export default function AuthPage() {
@@ -30,7 +31,8 @@ export default function AuthPage() {
     defaultValues: {
       email: '',
       password: '',
-    },
+      name: '',
+  }
   });
 
   const onSubmit = async (data: FormData) => {
@@ -45,10 +47,16 @@ export default function AuthPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-      });
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      data: {
+        nom: data.name,
+        // prenom: data.prenom,
+      },
+    },
+  });
 
       if (error) {
         console.log('Données envoyées à Supabase :', data);
@@ -85,6 +93,42 @@ export default function AuthPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="mt-8 space-y-6"
               >
+                {/* Champ Nom */}
+                <FormField
+                  name="name"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <input
+                          type="text"
+                          placeholder="Nom"
+                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Champ Prénom */}
+                {/* <FormField
+                  name="email"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <input
+                          type="text"
+                          placeholder="Prenom"
+                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
                 {/* Champ Email */}
                 <FormField
                   name="email"
