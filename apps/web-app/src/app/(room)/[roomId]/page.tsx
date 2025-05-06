@@ -275,7 +275,7 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
                 }`}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Discussion
+                Discussionp
               </TabsTrigger>
               <TabsTrigger
                 value="users"
