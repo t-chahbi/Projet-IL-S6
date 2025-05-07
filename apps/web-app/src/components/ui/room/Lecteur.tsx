@@ -12,80 +12,71 @@ interface LecteurProps {
 }
 
 export default function Lecteur({ videoUrl, videoRef, currentTime, isPlaying }: LecteurProps) {
-  const playerRef = useRef<videojs.Player>();
+  // Initialisation de la ref avec null pour satisfaire TypeScript
+  const playerRef = useRef<ReturnType<typeof videojs> | null>(null);
 
   useEffect(() => {
-    if (playerRef.current || !videoRef.current || (!videoUrl.includes("youtube.com") && !videoUrl.includes("youtu.be"))) {
-      if (!videoUrl.includes("youtube.com") && !videoUrl.includes("youtu.be")) {
-        console.error("URL non supportée par video.js avec plugin YouTube:", videoUrl);
-      }
-      return;
+  let shouldInit = !playerRef.current && videoRef.current &&
+    (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
+  
+
+  if (!shouldInit) {
+    if (!videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
+      console.error('URL non supportée par video.js avec plugin YouTube:', videoUrl);
     }
+    // cleanup vide
+    return () => {};
+  }
 
-    console.log("Chargement de la vidéo avec l'URL:", videoUrl);
+  console.log("Chargement de la vidéo avec l'URL:", videoUrl);
 
-    const player = videojs(videoRef.current, {
-      controls: true,
-      autoplay: false,
-      preload: 'auto',
-      responsive: true,
-      fluid: true,
-      techOrder: ['youtube'],
-      sources: [
-        {
-          src: videoUrl,
-          type: 'video/youtube',
-        },
-      ],
-    });
+  const player = videojs(videoRef.current!, {
+    controls: true,
+    autoplay: false,
+    preload: 'auto',
+    responsive: true,
+    fluid: true,
+    techOrder: ['youtube'],
+    sources: [
+      { src: videoUrl, type: 'video/youtube' }
+    ]
+  });
+  playerRef.current = player;
 
-    playerRef.current = player;
+  player.on('error', () => console.error('Erreur lors du chargement de la vidéo.'));
 
-    player.on('error', () => {
-      console.error('Erreur lors du chargement de la vidéo.');
-    });
+  const videoEl = videoRef.current!;
+  player.on('play', () => videoEl.dispatchEvent(new Event('play')));
+  player.on('pause', () => videoEl.dispatchEvent(new Event('pause')));
+  player.on('seeked', () => videoEl.dispatchEvent(new Event('seeked')));
+  player.on('timeupdate', () => {
+    videoEl.currentTime = player.currentTime();
+  });
 
-    // Forward Video.js events to the native <video> element
-    const videoEl = videoRef.current;
-    player.on('play', () => {
-      videoEl?.dispatchEvent(new Event('play'));
-    });
-    player.on('pause', () => {
-      videoEl?.dispatchEvent(new Event('pause'));
-    });
-    player.on('seeked', () => {
-      videoEl?.dispatchEvent(new Event('seeked'));
-    });
-
-    // Forward Video.js time updates to the native <video> element
-    player.on('timeupdate', () => {
-      const videoEl = videoRef.current;
-      if (videoEl) {
-        videoEl.currentTime = player.currentTime();
-      }
-    });
-
-    return () => {
-      player.dispose();
-      playerRef.current = undefined;
-    };
-  }, [videoUrl, videoRef]);
+  // Function de cleanup
+  return () => {
+    player.dispose();
+    playerRef.current = null;
+  };
+}, [videoUrl, videoRef]);
 
   useEffect(() => {
     const player = playerRef.current;
     const videoEl = videoRef.current;
     if (!player || !videoEl) return;
-    // Sync time if drift > 0.5s
+
+    // Synchronisation du time si l'écart > 0.5s
     if (Math.abs(player.currentTime() - currentTime) > 0.5) {
       player.currentTime(currentTime);
     }
-    // Sync play/pause
+
+    // Synchronisation play/pause
     if (isPlaying && player.paused()) {
       player.play();
     } else if (!isPlaying && !player.paused()) {
       player.pause();
     }
-  }, [currentTime, isPlaying]);
+  }, [currentTime, isPlaying, videoRef]);
 
   return (
     <div>

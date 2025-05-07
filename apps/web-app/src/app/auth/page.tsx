@@ -4,7 +4,6 @@ import React from 'react';
 import {
   Form,
   FormItem,
-  FormLabel,
   FormControl,
   FormMessage,
   FormField,

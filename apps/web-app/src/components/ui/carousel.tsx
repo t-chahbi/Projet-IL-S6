@@ -108,15 +108,18 @@ const Carousel = React.forwardRef<
 
     React.useEffect(() => {
       if (!api) {
-        return
+        // on retourne ici un cleanup vide
+        return () => {}
       }
-
+    
       onSelect(api)
       api.on("reInit", onSelect)
       api.on("select", onSelect)
-
+    
+      // cleanup réel quand api existe
       return () => {
-        api?.off("select", onSelect)
+        api.off("reInit", onSelect)
+        api.off("select", onSelect)
       }
     }, [api, onSelect])
 

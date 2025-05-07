@@ -16,14 +16,14 @@ const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default function WatchTogetherPage({
-  params,
-}: {
-  params: Promise<{ roomId: string }>;
-}) {
-  const { isNeonTheme, isLightTheme } = useAppTheme();
+export default function WatchTogetherPage({ params }: { params: Promise<{ roomId: string }> }) {
+  const { isNeonTheme, isLightTheme } = useAppTheme()
   const { roomId } = use(params);
   const socket = useSocket();
+  const clientId = "test";
+  //const emitMessage = useSocketEmit("message");
+
+  const { stream: localStream } = useVoiceChat(roomId, clientId, "Vous");
   const emitMessage = useSocketEmit('message');
 
   
@@ -72,11 +72,11 @@ export default function WatchTogetherPage({
   const [videoTitle, setVideoTitle] = useState('Film');
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isSeeking = useRef(false);
-  const [hasSyncedInitially, setHasSyncedInitially] = useState(false);
+  //const [hasSyncedInitially, setHasSyncedInitially] = useState(false);
   const [currentTimeState, setCurrentTimeState] = useState(0);
   const [isPlayingState, setIsPlayingState] = useState(false);
 
-  useEffect(() => {
+useEffect((): void | (() => void) => {
     if (!socket) return;
 
     const tryJoin = (password?: string) => {
@@ -102,6 +102,30 @@ export default function WatchTogetherPage({
     tryJoin();
   }, [socket, roomId]);
 
+  useSocketEvent("message", (msg: { id: number; user: string; content: string; time: string }) => {
+    setMessages((prev) => [...prev, msg]);
+  });
+
+  const [onlineUsers, setOnlineUsers] = useState<{ id: number; name: string }[]>([]);
+
+  // Local audio mute state: true means audio is muted
+  const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(true);
+
+  useEffect(() => {
+    localStream?.getAudioTracks().forEach(track => {
+      track.enabled = !isLocalAudioMuted;
+    });
+  }, [localStream, isLocalAudioMuted]);
+
+  const muteLocalAudio = useCallback(() => {
+    setIsLocalAudioMuted(true);
+  }, []);
+
+  const unmuteLocalAudio = useCallback(() => {
+    setIsLocalAudioMuted(false);
+  }, []);
+
+  
   useSocketEvent(
     'message',
     (msg: { id: number; user: string; content: string; time: string }) => {
@@ -109,43 +133,50 @@ export default function WatchTogetherPage({
     }
   );
 
+
   const [onlineUsers, setOnlineUsers] = useState<
     { id: string; name: string }[]
   >([]);
 
-  useSocketEvent(
-    'room-state',
-    (state: {
-      videoUrl: string;
-      users: string[];
-      currentTime: number;
-      isPlaying: boolean;
-    }) => {
-      console.log('Room state updated:', state);
-      setVideoUrl(state.videoUrl);
-      const parsedTitle = state.videoUrl.split('v=')[1] || state.videoUrl;
-      setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
-      setOnlineUsers(
-        state.users.map((name, index) => ({ id: `${index}`, name }))
-      );
-      setCurrentTimeState(state.currentTime);
-      setIsPlayingState(state.isPlaying);
-      if (videoRef.current) {
-        const video = videoRef.current;
-        // Always synchronize on first sync, and subsequently only if not seeking
-        if (!isSeeking.current) {
-          // Synchronize currentTime if desynced by more than 0.5s
-          if (Math.abs(video.currentTime - state.currentTime) > 0.5) {
-            video.currentTime = state.currentTime;
-          }
-          // Synchronize play/pause state
-          if (state.isPlaying && video.paused) video.play();
-          if (!state.isPlaying && !video.paused) video.pause();
+
+  useSocketEvent("room-state", (state: { videoUrl: string; users: string[]; currentTime: number; isPlaying: boolean }) => {
+    console.log("Room state updated:", state);
+    setVideoUrl(state.videoUrl);
+    const parsedTitle = state.videoUrl.split("v=")[1] || state.videoUrl;
+    setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
+    setOnlineUsers(state.users.map((name, index) => ({ id: index, name })));
+    setCurrentTimeState(state.currentTime);
+    setIsPlayingState(state.isPlaying);
+    if (videoRef.current) {
+      const video = videoRef.current;
+      // Always synchronize on first sync, and subsequently only if not seeking
+      if (!isSeeking.current) {
+        // Synchronize currentTime if desynced by more than 0.5s
+        if (Math.abs(video.currentTime - state.currentTime) > 0.5) {
+          video.currentTime = state.currentTime;
+
         }
       }
       setHasSyncedInitially(true);
     }
-  );
+    //setHasSyncedInitially(true);
+  });
+
+  useEffect(() => {
+    if (!socket) return;
+  
+    const handleSetVideo = (data: { videoUrl: string }) => {
+      setVideoUrl(data.videoUrl);
+      const parsedTitle = data.videoUrl.split("v=")[1] || data.videoUrl;
+      setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
+    };
+  
+    socket.on("set-video", handleSetVideo);
+  
+    return () => {
+      socket.off("set-video", handleSetVideo);
+    };
+  }, [socket]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -164,7 +195,7 @@ export default function WatchTogetherPage({
     };
   }, [socket, roomId, videoRef]);
 
-  useEffect(() => {
+useEffect((): void | (() => void) => {
     const video = videoRef.current;
     if (!video || !socket) return;
 
@@ -414,6 +445,10 @@ export default function WatchTogetherPage({
 
             <TabsContent value="users" className="flex-1 overflow-y-auto">
               <UsersPanel
+                isLocalAudioMuted={isLocalAudioMuted}
+                onMute={muteLocalAudio}
+                onUnmute={unmuteLocalAudio}
+
                 users={onlineUsers.map((u) => ({
                   id: u.id,
                   name: u.name,
