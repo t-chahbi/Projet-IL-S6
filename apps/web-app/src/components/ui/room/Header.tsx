@@ -14,7 +14,7 @@ export default function Header() {
   const { isNeonTheme, isLightTheme } = useAppTheme()
 
   const { roomId } = useParams() as { roomId: string };
-  const emit = useSocketEmit(roomId);
+  const emit = useSocketEmit();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<{ title: string; url: string; thumbnail: string }[]>([]);
@@ -35,11 +35,7 @@ export default function Header() {
   };
 
   useEffect(() => {
-    if (!isSearchOpen) {
-      // toujours retourner un cleanup, même vide
-      return () => {};
-    }
-  
+    if (!isSearchOpen) return;
     const handler = setTimeout(() => {
       if (searchQuery.trim()) {
         fetchResults();
@@ -47,8 +43,6 @@ export default function Header() {
         setResults([]);
       }
     }, 300);
-  
-    // cleanup pour clearTimeout
     return () => clearTimeout(handler);
   }, [searchQuery, isSearchOpen]);
 

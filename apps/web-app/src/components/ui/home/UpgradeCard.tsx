@@ -6,9 +6,9 @@ type UpgradeCardArg={
   price: string;
   description: string;
   properties: string;
-  //pay: string; // Si ce champ est optionnel
+  pay: string; // Si ce champ est optionnel
 };
-const UpgradeCard=({title , price , description , properties}:UpgradeCardArg)=>{
+const UpgradeCard=({title , price , description , properties , pay}:UpgradeCardArg)=>{
   return (
     <div className="bg-gray-600 rounded-xl flex justify-between w-5/12 flex-col p-6 ">
         <div className="flex flex-col justify-around h-1/3">
