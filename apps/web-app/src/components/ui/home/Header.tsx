@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/home/Button';
 import EyesLogo from '@/components/ui/home/Eyes';
 
 export default function Header() {

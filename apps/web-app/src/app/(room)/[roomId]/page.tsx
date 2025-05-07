@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use, useRef, useEffect } from "react"
+import { useState, use, useRef, useEffect, useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MessageSquare, Users, Settings } from "lucide-react"
 import Header from "@/components/ui/room/Header"
@@ -10,13 +10,17 @@ import ChatPanel from "@/components/ui/room/ChatPanel"
 import UsersPanel from "@/components/ui/room/UsersPanel"
 import SettingsPanel from "@/components/ui/room/SettingsPanel"
 import { useAppTheme } from "@/contexts/theme-context"
-import { useSocket, useSocketEvent, useSocketEmit } from "@/lib/useSocket";
+import { useSocket, useSocketEvent } from "@/lib/useSocket";
+import { useVoiceChat } from "@/lib/useVoiceChat";
 
 export default function WatchTogetherPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { isNeonTheme, isLightTheme } = useAppTheme()
   const { roomId } = use(params);
   const socket = useSocket();
-  const emitMessage = useSocketEmit("message");
+  const clientId = "test";
+  //const emitMessage = useSocketEmit("message");
+
+  const { stream: localStream } = useVoiceChat(roomId, clientId, "Vous");
 
   const [messages, setMessages] = useState([
     { id: 1, user: "Sophie", content: "Cette scène est incroyable !", time: "14:45" },
@@ -32,11 +36,11 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
   const [videoTitle, setVideoTitle] = useState("Film");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isSeeking = useRef(false);
-  const [hasSyncedInitially, setHasSyncedInitially] = useState(false);
+  //const [hasSyncedInitially, setHasSyncedInitially] = useState(false);
   const [currentTimeState, setCurrentTimeState] = useState(0);
   const [isPlayingState, setIsPlayingState] = useState(false);
 
-  useEffect(() => {
+useEffect((): void | (() => void) => {
     if (!socket) return;
 
     const tryJoin = (password?: string) => {
@@ -62,7 +66,24 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
     setMessages((prev) => [...prev, msg]);
   });
 
-  const [onlineUsers, setOnlineUsers] = useState<{ id: string; name: string }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ id: number; name: string }[]>([]);
+
+  // Local audio mute state: true means audio is muted
+  const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(true);
+
+  useEffect(() => {
+    localStream?.getAudioTracks().forEach(track => {
+      track.enabled = !isLocalAudioMuted;
+    });
+  }, [localStream, isLocalAudioMuted]);
+
+  const muteLocalAudio = useCallback(() => {
+    setIsLocalAudioMuted(true);
+  }, []);
+
+  const unmuteLocalAudio = useCallback(() => {
+    setIsLocalAudioMuted(false);
+  }, []);
 
 
   useSocketEvent("room-state", (state: { videoUrl: string; users: string[]; currentTime: number; isPlaying: boolean }) => {
@@ -70,7 +91,7 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
     setVideoUrl(state.videoUrl);
     const parsedTitle = state.videoUrl.split("v=")[1] || state.videoUrl;
     setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
-    setOnlineUsers(state.users.map((name, index) => ({ id: `${index}`, name })));
+    setOnlineUsers(state.users.map((name, index) => ({ id: index, name })));
     setCurrentTimeState(state.currentTime);
     setIsPlayingState(state.isPlaying);
     if (videoRef.current) {
@@ -86,8 +107,24 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
         if (!state.isPlaying && !video.paused) video.pause();
       }
     }
-    setHasSyncedInitially(true);
+    //setHasSyncedInitially(true);
   });
+
+  useEffect(() => {
+    if (!socket) return;
+  
+    const handleSetVideo = (data: { videoUrl: string }) => {
+      setVideoUrl(data.videoUrl);
+      const parsedTitle = data.videoUrl.split("v=")[1] || data.videoUrl;
+      setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
+    };
+  
+    socket.on("set-video", handleSetVideo);
+  
+    return () => {
+      socket.off("set-video", handleSetVideo);
+    };
+  }, [socket]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -106,7 +143,7 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
     };
   }, [socket, roomId, videoRef]);
 
-  useEffect(() => {
+useEffect((): void | (() => void) => {
     const video = videoRef.current;
     if (!video || !socket) return;
 
@@ -310,7 +347,12 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
             </TabsContent>
 
             <TabsContent value="users" className="flex-1 overflow-y-auto">
-              <UsersPanel users={onlineUsers.map(u => ({ id: u.id, name: u.name, status: "regarde" }))} />
+              <UsersPanel
+                users={onlineUsers.map(u => ({ id: u.id, name: u.name, status: "regarde" }))}
+                isLocalAudioMuted={isLocalAudioMuted}
+                onMute={muteLocalAudio}
+                onUnmute={unmuteLocalAudio}
+              />
             </TabsContent>
 
             <TabsContent value="settings" className="flex-1 overflow-y-auto">

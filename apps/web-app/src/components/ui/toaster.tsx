@@ -1,8 +1,8 @@
 "use client"
 
 import { useToast } from "@/hooks/use-toast"
+import Toast from "@/components/ui/Toast-message"
 import {
-  Toast,
   ToastClose,
   ToastDescription,
   ToastProvider,

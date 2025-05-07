@@ -21,6 +21,15 @@ interface RoomMeta {
   users: Record<string, string>; // socket.id -> username
 }
 
+interface WebRTCSigPayload {
+  roomId: string;
+  to?: string;           // socket.id destination
+  type: "offer" | "answer" | "ice";
+  sdp?: RTCSessionDescriptionInit;
+  candidate?: RTCIceCandidateInit;
+  from?: string;         // ajouter côté serveur avant d'émettre
+}
+
 const roomStates: Record<string, SyncState> = {};
 const roomMeta: Record<string, RoomMeta> = {};
 
@@ -101,6 +110,9 @@ io.on('connection', (socket) => {
       const displayName = name || socket.id;
       meta.users[socket.id] = displayName;
 
+      // Prévenir les autres participants qu'un nouveau pair est arrivé
+      socket.to(roomId).emit("peer-join", socket.id);
+
       console.log(`${socket.id} joined room ${roomId}`);
 
       const state = roomStates[roomId] || { currentTime: 0, isPlaying: false };
@@ -161,16 +173,35 @@ io.on('connection', (socket) => {
     }
   );
 
-  //messages
-  socket.on(
-    'send-message',
-    ({ roomId, message }: { roomId: string; message: string }) => {
-      if (roomMeta[roomId]) {
-        io.to(roomId).emit('receive-message', { userId: socket.id, message });
-        console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
-      }
+  // Compatibilité anciens / nouveaux noms d'événements
+  const handleMessage = ({ roomId, message }: { roomId: string; message: string }) => {
+    if (roomMeta[roomId]) {
+      io.to(roomId).emit("message", {
+        id: Date.now(),
+        userId: socket.id,
+        content: message,
+        time: new Date().toISOString(),
+      });
+      console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
     }
-  );
+  };
+  socket.on("send-message", handleMessage);
+  socket.on("message", handleMessage);
+
+  // Relais de la signalisation WebRTC
+  socket.on("webrtc-signal", (payload: WebRTCSigPayload) => {
+    const { roomId, to, ...rest } = payload;
+    // S'assure que l'émetteur appartient bien à la room
+    if (!roomMeta[roomId] || !roomMeta[roomId].users[socket.id]) return;
+
+    const message = { ...rest, roomId, from: socket.id };
+    if (to) {
+      io.to(to).emit("webrtc-signal", message);
+    } else {
+      // broadcast à toute la room sauf l'émetteur
+      socket.to(roomId).emit("webrtc-signal", message);
+    }
+  });
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
@@ -178,6 +209,7 @@ io.on('connection', (socket) => {
       if (meta.users[socket.id]) {
         delete meta.users[socket.id];
         io.to(roomId).emit('users', Object.values(meta.users));
+        socket.to(roomId).emit("peer-leave", socket.id);
         broadcastRoomState(roomId);
       }
     }
