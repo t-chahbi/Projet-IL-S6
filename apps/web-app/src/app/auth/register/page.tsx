@@ -3,9 +3,8 @@
 import React from 'react';
 
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
+const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   Form,
@@ -17,18 +16,23 @@ import {
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button'; // Exemple d'un bouton personnalisé
+import { useRouter } from 'next/navigation';
 
 type FormData = {
   email: string;
   password: string;
+  name: string;
 };
 
 export default function AuthPage() {
+  const router = useRouter(); // Initialisation du router
+
   const form = useForm<FormData>({
     defaultValues: {
       email: '',
       password: '',
-    },
+      name: '',
+  }
   });
 
   const onSubmit = async (data: FormData) => {
@@ -43,16 +47,23 @@ export default function AuthPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-      });
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      data: {
+        nom: data.name,
+        // prenom: data.prenom,
+      },
+    },
+  });
 
       if (error) {
         console.log('Données envoyées à Supabase :', data);
         console.error("Erreur lors de l'inscription :", error.message);
       } else {
         console.log('Inscription réussie !');
+        router.push('/'); // Redirection vers la page d'accueil
       }
     } catch (err) {
       console.error('Erreur inattendue :', err);
@@ -82,6 +93,42 @@ export default function AuthPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="mt-8 space-y-6"
               >
+                {/* Champ Nom */}
+                <FormField
+                  name="name"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <input
+                          type="text"
+                          placeholder="Nom"
+                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Champ Prénom */}
+                {/* <FormField
+                  name="email"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <input
+                          type="text"
+                          placeholder="Prenom"
+                          className="relative block w-full px-3 py-3 text-white bg-gray-700 border border-gray-700 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
                 {/* Champ Email */}
                 <FormField
                   name="email"

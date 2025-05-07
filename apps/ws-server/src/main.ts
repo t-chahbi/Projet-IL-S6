@@ -164,9 +164,9 @@ io.on('connection', (socket) => {
   //messages
   socket.on(
     'send-message',
-    ({ roomId, message }: { roomId: string; message: string }) => {
+    ({ roomId,name,  message }: { roomId: string; name: string; message: string }) => {
       if (roomMeta[roomId]) {
-        io.to(roomId).emit('receive-message', { userId: socket.id, message });
+        io.to(roomId).emit('receive-message', { userId: socket.id, name ,message });
         console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
       }
     }
