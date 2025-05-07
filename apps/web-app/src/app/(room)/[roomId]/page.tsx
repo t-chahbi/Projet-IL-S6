@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, use, useRef, useEffect } from 'react';
+import { useState, use, useRef, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Users, Settings } from 'lucide-react';
 import Header from '@/components/ui/room/Header';
@@ -11,6 +11,7 @@ import UsersPanel from '@/components/ui/room/UsersPanel';
 import SettingsPanel from '@/components/ui/room/SettingsPanel';
 import { useAppTheme } from '@/contexts/theme-context';
 import { useSocket, useSocketEvent, useSocketEmit } from '@/lib/useSocket';
+import { useVoiceChat } from '@/lib/useVoiceChat';
 import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://hjvnggilhhnqcejlcipw.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
@@ -20,15 +21,14 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
   const { isNeonTheme, isLightTheme } = useAppTheme()
   const { roomId } = use(params);
   const socket = useSocket();
-  const clientId = "test";
+  const [user, setUser] = useState<any>(null);
+  const clientId = user?.id || socket?.id || 'inconnu';
   //const emitMessage = useSocketEmit("message");
 
-  const { stream: localStream } = useVoiceChat(roomId, clientId, "Vous");
+  const { stream: localStream } = useVoiceChat(roomId, clientId, user?.user_metadata.nom || 'Vous');
   const emitMessage = useSocketEmit('message');
 
   
-
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -43,26 +43,7 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
   }, []);
   
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      user: 'Sophie',
-      content: 'Cette scène est incroyable !',
-      time: '14:45',
-    },
-    {
-      id: 2,
-      user: 'Thomas',
-      content: 'Je sais ! La cinématographie est impressionnante.',
-      time: '14:46',
-    },
-    {
-      id: 3,
-      user: 'Emma',
-      content: "On peut revenir en arrière ? J'ai manqué quelque chose.",
-      time: '14:48',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   // State for password modal and input
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -82,7 +63,7 @@ useEffect((): void | (() => void) => {
     const tryJoin = (password?: string) => {
       socket.emit(
         'join-room',
-        { roomId, name: 'Vous', password },
+        { roomId, name: user?.user_metadata.nom || 'Vous', password },
         (response: {
           success: boolean;
           requiresPassword?: boolean;
@@ -100,11 +81,8 @@ useEffect((): void | (() => void) => {
     };
 
     tryJoin();
-  }, [socket, roomId]);
+  }, [socket, roomId, user]);
 
-  useSocketEvent("message", (msg: { id: number; user: string; content: string; time: string }) => {
-    setMessages((prev) => [...prev, msg]);
-  });
 
   const [onlineUsers, setOnlineUsers] = useState<{ id: string; name: string }[]>([]);
 
@@ -126,12 +104,6 @@ useEffect((): void | (() => void) => {
   }, []);
 
   
-  useSocketEvent(
-    'message',
-    (msg: { id: number; user: string; content: string; time: string }) => {
-      setMessages((prev) => [...prev, msg]);
-    }
-  );
 
 
 
@@ -140,7 +112,12 @@ useEffect((): void | (() => void) => {
     setVideoUrl(state.videoUrl);
     const parsedTitle = state.videoUrl.split("v=")[1] || state.videoUrl;
     setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
-    setOnlineUsers(state.users.map((name, index) => ({ id: index, name })));
+    setOnlineUsers(
+      state.users.map((name, index) => ({
+        id: `${name}-${index}`,
+        name,
+      }))
+    );
     setCurrentTimeState(state.currentTime);
     setIsPlayingState(state.isPlaying);
     if (videoRef.current) {
@@ -150,10 +127,8 @@ useEffect((): void | (() => void) => {
         // Synchronize currentTime if desynced by more than 0.5s
         if (Math.abs(video.currentTime - state.currentTime) > 0.5) {
           video.currentTime = state.currentTime;
-
         }
       }
-      setHasSyncedInitially(true);
     }
     //setHasSyncedInitially(true);
   });
@@ -246,9 +221,9 @@ useEffect((): void | (() => void) => {
         ...prev,
         {
           id: prev.length + 1,
-          user: msg.name || 'Utilisateur inconnu',
-          content: msg.message || 'Message vide',
-          time: new Date().toLocaleTimeString([], {
+          user: msg.user || 'Utilisateur inconnu',
+          content: msg.content || 'Message vide',
+          time: msg.time || new Date().toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           }),
@@ -267,11 +242,12 @@ useEffect((): void | (() => void) => {
     if (newMessage.trim()) {
       const messageData = {
         roomId,
-        name: user?.user_metadata.nom || 'Utilisateur inconnu',
-        message: newMessage,
+        user: user?.user_metadata.nom ?? 'Anonyme',
+        content: newMessage,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      socket.emit('send-message', messageData);
+      emitMessage(messageData);
     }
   };
 
@@ -323,7 +299,7 @@ useEffect((): void | (() => void) => {
             onClick={() => {
               socket.emit(
                 'join-room',
-                { roomId, name: 'Vous', password: passwordInput },
+                { roomId, name: user?.user_metadata.nom || 'Vous', password: passwordInput },
                 (response: { success: boolean; videoUrl?: string }) => {
                   if (response.success) {
                     setShowPasswordModal(false);
