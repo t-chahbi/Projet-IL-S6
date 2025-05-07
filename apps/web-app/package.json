@@ -1,0 +1,16 @@
+{
+  "name": "@projet-il-s6/web-app",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "web-app"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "next": "~15.1.4",
+    "postcss": "^8.5.3",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "tailwindcss": "^3.0.0"
+  }
+}
