@@ -155,31 +155,22 @@ export default function WatchTogetherPage({ params }: { params: Promise<{ roomId
       video.removeEventListener("seeked", onSeeked);
     };
   }, [socket, roomId]);
+  const [recommendations , setRecommendations]=useState<{title:string,url:string}[]>([]);
+  useEffect(()=>{
+    const videoId=videoUrl?.split("v")[1];
+    if(!videoId) return ;
+    const fetchRecommendations=async()=>{
+      try {
+        const res = await fetch(`/api/recommendations?videoId=${videoId}`);
+        const data =await res.json();
+        setRecommendations(data);
+      }catch (err) {
+        console.error("Erreur recommandations :", err);
+      }
+    };
+    fetchRecommendations();
+  },[videoUrl]);
 
-  const recommendations = [
-    {
-      id: 1,
-      title: "Inception",
-      duration: "2h 28min",
-      views: "24M",
-      thumbnail: "/placeholder.svg?height=120&width=200",
-    },
-    { id: 2, title: "Matrix", duration: "2h 16min", views: "18M", thumbnail: "/placeholder.svg?height=120&width=200" },
-    {
-      id: 3,
-      title: "Interstellar",
-      duration: "2h 49min",
-      views: "15M",
-      thumbnail: "/placeholder.svg?height=120&width=200",
-    },
-    {
-      id: 4,
-      title: "Blade Runner 2049",
-      duration: "2h 44min",
-      views: "12M",
-      thumbnail: "/placeholder.svg?height=120&width=200",
-    },
-  ]
 
   const handleSendMessage = (newMessage: string) => {
     if (newMessage.trim()) {
