@@ -106,7 +106,7 @@ useEffect((): void | (() => void) => {
     setMessages((prev) => [...prev, msg]);
   });
 
-  const [onlineUsers, setOnlineUsers] = useState<{ id: number; name: string }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ id: string; name: string }[]>([]);
 
   // Local audio mute state: true means audio is muted
   const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(true);
@@ -133,10 +133,6 @@ useEffect((): void | (() => void) => {
     }
   );
 
-
-  const [onlineUsers, setOnlineUsers] = useState<
-    { id: string; name: string }[]
-  >([]);
 
 
   useSocketEvent("room-state", (state: { videoUrl: string; users: string[]; currentTime: number; isPlaying: boolean }) => {

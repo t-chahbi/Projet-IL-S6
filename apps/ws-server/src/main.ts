@@ -183,19 +183,9 @@ io.on('connection', (socket) => {
         time: new Date().toISOString(),
       });
       console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
-
-  //messages
-  socket.on(
-    'send-message',
-    ({ roomId,name,  message }: { roomId: string; name: string; message: string }) => {
-      if (roomMeta[roomId]) {
-        io.to(roomId).emit('receive-message', { userId: socket.id, name ,message });
-        console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
-      }
-
     }
   };
-  socket.on("send-message", handleMessage);
+
   socket.on("message", handleMessage);
 
   // Relais de la signalisation WebRTC
@@ -273,35 +263,6 @@ io.on('connection', (socket) => {
       callback({ success: true });
     }
   );
-  socket.on('webrtc-offer',({roomId , offer}) =>{
-    console.log("users :", roomMeta[roomId].users);
-    console.log("type :", typeof(roomMeta[roomId].users));
-
-    /* .forEach((userId : string) => {
-      socket.to(userId).emit('webrtc-offer',{
-        from : socket.id,
-        offer 
-      });
-    }); */
-  });
-
-  socket.on('webrtc-answer',({roomId,answer,users})=> {
-    users.forEach((userId : string) => {
-      socket.to(userId).emit('webrtc-answer',{
-        from : socket.id,
-        answer
-      });
-    });
-  });
-  
-  socket.on('webrtc-candidate',({roomId,candidate,users})=> {
-    users.forEach((userId : string) => {
-      socket.to(userId).emit('webrtc-candidate',{
-        from : socket.id,
-        candidate 
-      });
-    });
-  });
 
 });
 
