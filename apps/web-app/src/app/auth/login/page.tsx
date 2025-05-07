@@ -63,6 +63,7 @@ export default function AuthPage() {
           data: { user },
         } = await supabase.auth.getUser();
         showToastMessage(`Bienvenue ${user?.email ?? 'utilisateur'}`);
+        window.location.href = "/";
       }
 
       if (error) {
