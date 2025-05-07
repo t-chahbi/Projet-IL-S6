@@ -266,36 +266,6 @@ useEffect((): void | (() => void) => {
     }
   };
 
-  const recommendations = [
-    {
-      id: 1,
-      title: 'Inception',
-      duration: '2h 28min',
-      views: '24M',
-      thumbnail: '/placeholder.svg?height=120&width=200',
-    },
-    {
-      id: 2,
-      title: 'Matrix',
-      duration: '2h 16min',
-      views: '18M',
-      thumbnail: '/placeholder.svg?height=120&width=200',
-    },
-    {
-      id: 3,
-      title: 'Interstellar',
-      duration: '2h 49min',
-      views: '15M',
-      thumbnail: '/placeholder.svg?height=120&width=200',
-    },
-    {
-      id: 4,
-      title: 'Blade Runner 2049',
-      duration: '2h 44min',
-      views: '12M',
-      thumbnail: '/placeholder.svg?height=120&width=200',
-    },
-  ];
 
   // Password modal
   {
