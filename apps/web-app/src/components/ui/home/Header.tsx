@@ -96,7 +96,9 @@ export default function Header() {
             </Button>
           </>
         )}
-        <Button>Upgrade</Button>
+        <Button asChild>
+          <a href="/upgrade">upgrade</a>
+        </Button>
         <Button asChild>
           <a href="/forum">Community</a>
         </Button>
