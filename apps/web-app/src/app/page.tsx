@@ -15,7 +15,6 @@ const App = () => {
   const [password, setPassword] = useState("");
   const socket = useSocket();
   const router = useRouter();
-
   const emitJoinRoom = React.useCallback(
     (data, callback) => socket.emit("join-room", data, callback),
     [socket]
@@ -99,6 +98,7 @@ const App = () => {
     </div>
   </div>
 )}
+
 
 
       <div className="mt-auto">

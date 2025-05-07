@@ -211,6 +211,21 @@ useEffect((): void | (() => void) => {
       video.removeEventListener('seeked', onSeeked);
     };
   }, [socket, roomId]);
+  const [recommendations , setRecommendations]=useState<{title:string,url:string}[]>([]);
+  useEffect(()=>{
+    const videoId=videoUrl?.split("v")[1];
+    if(!videoId) return ;
+    const fetchRecommendations=async()=>{
+      try {
+        const res = await fetch(`/api/recommendations?videoId=${videoId}`);
+        const data =await res.json();
+        setRecommendations(data);
+      }catch (err) {
+        console.error("Erreur recommandations :", err);
+      }
+    };
+    fetchRecommendations();
+  },[videoUrl]);
 
   useEffect(() => {
     if (!socket) return;
