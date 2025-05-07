@@ -68,6 +68,7 @@ useEffect((): void | (() => void) => {
           success: boolean;
           requiresPassword?: boolean;
           videoUrl?: string;
+          videoTitle?: string;
         }) => {
           if (!response.success && response.requiresPassword) {
             setShowPasswordModal(true);
@@ -75,6 +76,7 @@ useEffect((): void | (() => void) => {
             console.error('Failed to join room');
           } else {
             setVideoUrl(response.videoUrl || '');
+            setVideoTitle(response.videoTitle || 'Vidéo');
           }
         }
       );
@@ -107,11 +109,10 @@ useEffect((): void | (() => void) => {
 
 
 
-  useSocketEvent("room-state", (state: { videoUrl: string; users: string[]; currentTime: number; isPlaying: boolean }) => {
+  useSocketEvent("room-state", (state: { videoUrl: string; videoTitle?: string; users: string[]; currentTime: number; isPlaying: boolean }) => {
     console.log("Room state updated:", state);
     setVideoUrl(state.videoUrl);
-    const parsedTitle = state.videoUrl.split("v=")[1] || state.videoUrl;
-    setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
+    setVideoTitle(state.videoTitle || 'Vidéo');
     setOnlineUsers(
       state.users.map((name, index) => ({
         id: `${name}-${index}`,
@@ -136,10 +137,9 @@ useEffect((): void | (() => void) => {
   useEffect(() => {
     if (!socket) return;
   
-    const handleSetVideo = (data: { videoUrl: string }) => {
+    const handleSetVideo = (data: { videoUrl: string; videoTitle?: string }) => {
       setVideoUrl(data.videoUrl);
-      const parsedTitle = data.videoUrl.split("v=")[1] || data.videoUrl;
-      setVideoTitle(decodeURIComponent(parsedTitle).slice(0, 40));
+      setVideoTitle(data.videoTitle || 'Vidéo');
     };
   
     socket.on("set-video", handleSetVideo);
@@ -263,6 +263,16 @@ useEffect((): void | (() => void) => {
       };
 
       emitMessage(messageData);
+
+      /* etMessages(prev => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          user: messageData.user,
+          content: messageData.content,
+          time: messageData.time,
+        }
+      ]); */
     }
   };
 
@@ -285,10 +295,11 @@ useEffect((): void | (() => void) => {
               socket.emit(
                 'join-room',
                 { roomId, name: user?.user_metadata.nom || 'Vous', password: passwordInput },
-                (response: { success: boolean; videoUrl?: string }) => {
+                (response: { success: boolean; videoUrl?: string; videoTitle?: string }) => {
                   if (response.success) {
                     setShowPasswordModal(false);
                     setVideoUrl(response.videoUrl || '');
+                    setVideoTitle(response.videoTitle || 'Vidéo');
                   } else {
                     alert('Mot de passe incorrect.');
                   }

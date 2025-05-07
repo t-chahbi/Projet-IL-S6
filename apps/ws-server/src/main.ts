@@ -174,15 +174,24 @@ io.on('connection', (socket) => {
   );
 
   // Compatibilité anciens / nouveaux noms d'événements
-  const handleMessage = ({ roomId, message }: { roomId: string; message: string }) => {
+  const handleMessage = ({
+    roomId,
+    user,
+    content,
+    time,
+  }: {
+    roomId: string;
+    user: string;
+    content: string;
+    time: string;
+  }) => {
     if (roomMeta[roomId]) {
-      io.to(roomId).emit("message", {
-        id: Date.now(),
-        userId: socket.id,
-        content: message,
-        time: new Date().toISOString(),
+      io.to(roomId).emit("receive-message", {
+        user,
+        content,
+        time,
       });
-      console.log(`Message from ${socket.id} in room ${roomId}: ${message}`);
+      console.log(`Message from ${user} in room ${roomId}: ${content}`);
     }
   };
 
