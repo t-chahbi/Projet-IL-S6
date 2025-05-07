@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Mic, MicOff } from "lucide-react"
 import { useAppTheme } from "@/contexts/theme-context"
 
 interface User {
@@ -13,9 +13,12 @@ interface User {
 
 interface UsersPanelProps {
   users: User[]
+  isLocalAudioMuted: boolean
+  onMute: () => void
+  onUnmute: () => void
 }
 
-export default function UsersPanel({ users  }: UsersPanelProps , {handleMicrophone}) {
+export default function UsersPanel({ users, isLocalAudioMuted, onMute, onUnmute }: UsersPanelProps) {
   const { isNeonTheme, isLightTheme } = useAppTheme()
 
   return (
@@ -25,17 +28,6 @@ export default function UsersPanel({ users  }: UsersPanelProps , {handleMicropho
       >
         Utilisateurs en ligne ({users.length})
       </h3>
-      <Button
-            size="icon"
-            onClick={handleMicrophone}
-            className={`${
-              isNeonTheme
-                ? "neon-button"
-                : isLightTheme
-                  ? "bg-teal-500 hover:bg-teal-600"
-                  : "bg-teal-600 hover:bg-teal-700"
-            }`}
-          ></Button>
       <div className="space-y-3">
         {users.map((user) => (
           <div key={user.id} className="flex items-center gap-3">
@@ -52,13 +44,23 @@ export default function UsersPanel({ users  }: UsersPanelProps , {handleMicropho
                 {user.name[0]}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <div
                 className={`font-medium ${
                   isNeonTheme ? "neon-text" : isLightTheme ? "text-gray-800" : "text-gray-200"
                 }`}
               >
                 {user.name}
+                {user.name === "Vous" && (
+                  <button
+                    type="button"
+                    onClick={isLocalAudioMuted ? onUnmute : onMute}
+                    className="ml-2"
+                    aria-label={isLocalAudioMuted ? "Unmute Microphone" : "Mute Microphone"}
+                  >
+                    {isLocalAudioMuted ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+                )}
               </div>
               <div
                 className={`text-xs flex items-center ${
